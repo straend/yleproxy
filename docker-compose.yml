@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  yleproxy:
+    build: .
+    volumes:
+      - yle_data:/data
+    environment:
+      URL: 'https://podds.example.com'
+      DATA_DIR: '/data'
+      DEBUG: 'False'
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.yleproxy.rule: "Host(`podds.example.com`)"
+      traefik.http.routers.yleproxy.entrypoints: "websecure"
+      traefik.http.routers.yleproxy.tls.certresolver: "letsencrypt"
+      traefik.http.services.yleproxy.loadbalancer.server.port: "5000"
+      traefik.http.routers.yleproxy.tls.domains[0].main: "podds.example.com"
+      traefik.http.routers.yleproxy.tls.domains[0].sans: "*.example.com"
+
+volumes:
+  yle_data:

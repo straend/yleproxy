@@ -1,4 +1,5 @@
 from flask import Flask, Response, send_file
+from flask_caching import Cache
 from bs4 import BeautifulSoup
 import requests
 from pathlib import Path
@@ -11,13 +12,22 @@ MY_DEBUG = os.getenv("DEBUG", False)
 dataDir = Path(MY_DATA_DIR)
 dataDir.mkdir(exist_ok=True, parents=True)
 
+config = {
+    "DEBUG": MY_DEBUG,
+    "CACHE_TYPE": "SimpleCache",
+    "CACHE_DEFAULT_TIMEOUT": 3600
+}
+
 app = Flask(__name__)
+app.config.from_mapping(config)
+cache = Cache(app)
 
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
 
 @app.route('/rss/<string:id>')
+@cache.cached()
 def show_rss(id):
     data = requests.get("https://feeds.yle.fi/areena/v1/series/{}.rss?lang=sv".format(id))
     soup = BeautifulSoup(data.content, "lxml-xml")
